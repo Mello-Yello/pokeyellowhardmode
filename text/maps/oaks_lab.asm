@@ -394,3 +394,13 @@ _OaksLabText_1d405::
 	text "I study #MON as"
 	line "PROF.OAK's AIDE."
 	done
+
+_OaksLabTextPlayerLostToOak::
+	text "You are a real"
+	line "failure, <PLAYER>."
+	done
+
+_OaksLabTextPlayerWonToOak::
+	text "I'm proud of"
+	line "you, <PLAYER>."
+	done

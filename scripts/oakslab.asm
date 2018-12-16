@@ -34,6 +34,7 @@ OaksLabScriptPointers:
 	dw OaksLabScript20
 	dw OaksLabScript21
 	dw OaksLabScript22
+	dw OaksLabScript23
 
 OaksLabScript0:
 	CheckEvent EVENT_OAK_APPEARED_IN_PALLET
@@ -629,7 +630,29 @@ OaksLabScript21:
 	ret
 
 OaksLabScript22:
+    ret
+
+OaksLabScript23:
+	ld a, [wBattleResult]
+	and a
+	ld a, $1c
+	SetEvent EVENT_EVER_FOUGHT_PROF_OAK
+	ResetEvent EVENT_WON_PROF_OAK_FIGHT
+	jr nz, .lostBattleOAK
+	ld a, $1d
+	SetEvent EVENT_WON_PROF_OAK_FIGHT
+.lostBattleOAK
+    ld [hSpriteIndexOrTextID], a
+    call DisplayTextID
+    xor a
+	predef HealParty
+	
+	ld a, $16
+	ld [wOaksLabCurScript], a
 	ret
+
+
+
 
 OaksLabScript_1c897:
 	ld hl, wBagItems
@@ -733,6 +756,8 @@ OaksLabTextPointers:
 	dw OaksLabText25
 	dw OaksLabText26
 	dw OaksLabText27
+	dw OaksLabText28
+	dw OaksLabText29
 
 OaksLabTextPointers2:
 	dw OaksLabText1
@@ -806,6 +831,9 @@ OaksLabScript_1c9ac:
 
 OaksLabText3:
 	TX_ASM
+	; If we already fought OAK, we'll skip straight into the fight
+	CheckEvent EVENT_EVER_FOUGHT_PROF_OAK
+	jr nz, .fight_oak
 	CheckEvent EVENT_PALLET_AFTER_GETTING_POKEBALLS
 	jr nz, .asm_1c9d9
 	ld hl, wPokedexOwned
@@ -813,14 +841,70 @@ OaksLabText3:
 	call CountSetBits
 	ld a, [wNumSetBits]
 	cp 2
-	jr c, .asm_1c9ec
+	jp c, .asm_1c9ec
 .asm_1c9d9
 	ld hl, OaksLabText_1ca9f
 	call PrintText
 	ld a, $1
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
 	predef DisplayDexRating
+.seen_all
+    ld hl, wPokedexOwned
+	ld b, wPokedexOwnedEnd - wPokedexOwned
+	call CountSetBits
+	ld a, [wNumSetBits]
+	cp 150
+	jr c, .end_OaksLabText3
+.fight_oak
+    ; Check if we already fought OAK this event
+    CheckEvent EVENT_FOUGHT_PROF_OAK
+    jr nz, .already_fought_oak
+    SetEvent EVENT_FOUGHT_PROF_OAK
+    
+    ;ld a, [wd730]
+	;bit 0, a
+	;ret nz
+	;ld a, $1
+	;ld [wSpriteIndex], a
+	;call GetSpritePosition1
+	
+	ld a, OPP_PROF_OAK
+	ld [wCurOpponent], a
+	ld a, $2
+	ld [wTrainerNo], a
+	ld hl, OaksLabRivalDefeatedText
+	ld de, OaksLabRivalBeatYouText
+	call SaveEndBattleTextPointers
+	ld hl, wd72d
+	set 6, [hl]
+	set 7, [hl]
+	xor a
+	ld [wJoyIgnore], a
+	;ld a, PLAYER_DIR_UP
+	;ld [wPlayerMovingDirection], a
+	
+	; Mostra un certo testo a posteriori
+    ld a, $c
+	ld [hSpriteIndexOrTextID], a
+	call DisplayTextID
+	jr .oak_post_battle
+    
+.already_fought_oak
+    CheckEvent EVENT_WON_PROF_OAK_FIGHT
+    ld hl, OaksLabTextWonBattleOAK
+    jp nz, .already_fought_oak_won
+    ld hl, OaksLabTextLostBattleOAK
+.already_fought_oak_won
+	call PrintText
+	jp TextScriptEnd
+	ret
+
+.oak_post_battle
+    ld a, $17
+	ld [wOaksLabCurScript], a
+.end_OaksLabText3
 	jp .asm_1ca6f
+
 
 .asm_1c9ec
 	ld b, POKE_BALL
@@ -1157,4 +1241,26 @@ OaksLabText9:
 
 OaksLabText_1c31d:
 	TX_FAR _OaksLabText_1d405
+	db "@"
+
+OaksLabText28:
+	TX_ASM
+	ld hl, OaksLabTextLostBattleOAK
+	call PrintText
+	jp TextScriptEnd
+
+
+OaksLabTextLostBattleOAK:
+	TX_FAR _OaksLabTextPlayerLostToOak
+	db "@"
+	
+OaksLabText29:
+	TX_ASM
+	ld hl, OaksLabTextWonBattleOAK
+	call PrintText
+	jp TextScriptEnd
+
+	
+OaksLabTextWonBattleOAK:
+	TX_FAR _OaksLabTextPlayerWonToOak
 	db "@"

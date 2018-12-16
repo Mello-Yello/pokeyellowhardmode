@@ -85,6 +85,7 @@ GaryScript3:
 	jp z, ResetGaryScript
 	call UpdateSprites
 	SetEvent EVENT_BEAT_CHAMPION_RIVAL
+	ResetEvent EVENT_FOUGHT_PROF_OAK
 	ld a, $f0
 	ld [wJoyIgnore], a
 	ld a, $1
