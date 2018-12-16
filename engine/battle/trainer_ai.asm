@@ -173,12 +173,12 @@ AIMoveChoiceModification2:
 	inc de
 	call ReadMove
 	ld a, [wEnemyMoveEffect]
-	cp ATTACK_UP1_EFFECT
-	jr c, .nextMove
+	;cp ATTACK_UP1_EFFECT
+	;jr c, .nextMove
 	cp BIDE_EFFECT
 	jr c, .preferMove
-	cp ATTACK_UP2_EFFECT
-	jr c, .nextMove
+	;cp ATTACK_UP2_EFFECT
+	;jr c, .nextMove
 	cp POISON_EFFECT
 	jr c, .preferMove
 	jr .nextMove
@@ -256,8 +256,83 @@ AIMoveChoiceModification3:
 	jr z, .nextMove
 	inc [hl] ; sligthly discourage this move
 	jr .nextMove
+
+
 AIMoveChoiceModification4:
-	ret
+	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offest)
+	ld de, wEnemyMonMoves ; enemy moves
+	ld b, NUM_MOVES + 1
+.nextMove
+	dec b
+	ret z ; processed all 4 moves
+	inc hl
+	ld a, [de]
+	and a
+	ret z ; no more moves in move set
+	inc de
+	call ReadMove
+	ld a, [wEnemyMoveEffect]
+	push hl
+	push de
+	push bc
+	ld hl, StatsChange1MoveEffects
+	ld de, $0001
+	call IsInArray
+	pop bc
+	pop de
+	pop hl
+	jr nc, .isTwoStatsMove
+	ld a, [hl]
+	add $3 ; discourage a little moves that change stats by 1
+	ld [hl], a
+    jr .nextMove
+.isTwoStatsMove
+    push hl
+	push de
+	push bc
+	ld hl, StatsChange2MoveEffects
+	ld de, $0001
+	call IsInArray
+	pop bc
+	pop de
+	pop hl
+	jr nc, .nextMove
+	
+	inc [hl] ; sligthly discourage moves that change stats by 2
+
+	jr .nextMove
+
+
+StatsChange1MoveEffects:
+    db ATTACK_UP1_EFFECT
+    db DEFENSE_UP1_EFFECT
+    db SPEED_UP1_EFFECT
+    db SPECIAL_UP1_EFFECT
+    db ACCURACY_UP1_EFFECT
+    db EVASION_UP1_EFFECT
+    db ATTACK_DOWN1_EFFECT
+    db DEFENSE_DOWN1_EFFECT
+    db SPEED_DOWN1_EFFECT
+    db SPECIAL_DOWN1_EFFECT
+    db ACCURACY_DOWN1_EFFECT
+    db EVASION_DOWN1_EFFECT
+    db -1
+
+StatsChange2MoveEffects:
+    db ATTACK_UP2_EFFECT
+    db DEFENSE_UP2_EFFECT
+    db SPEED_UP2_EFFECT
+    db SPECIAL_UP2_EFFECT
+    db ACCURACY_UP2_EFFECT
+    db EVASION_UP2_EFFECT
+    db ATTACK_DOWN2_EFFECT
+    db DEFENSE_DOWN2_EFFECT
+    db SPEED_DOWN2_EFFECT
+    db SPECIAL_DOWN2_EFFECT
+    db ACCURACY_DOWN2_EFFECT
+    db EVASION_DOWN2_EFFECT
+    db -1
+
 
 ReadMove:
 	push hl
