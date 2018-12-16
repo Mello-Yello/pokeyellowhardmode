@@ -2560,5 +2560,13 @@ const_value = 0
 	const EVENT_9FD                                  ; 9FD, (D886, bit 5)
 	const EVENT_9FE                                  ; 9FE, (D886, bit 6)
 	const EVENT_9FF                                  ; 9FF, (D886, bit 7)
+	const EVENT_EVER_FOUGHT_PROF_OAK                 ; A00, (D887, bit 0)
+	const EVENT_FOUGHT_PROF_OAK                      ; A01, (D887, bit 1)
+	const EVENT_WON_PROF_OAK_FIGHT                   ; A02, (D887, bit 2)
+	const EVENT_SPOKED_TO_TRUCK_OWNER                ; A03, (D887, bit 3)
+	const EVENT_MOVED_TRUCK                          ; A04, (D887, bit 4)
+	const EVENT_PLACEHOLDER3                         ; A05, (D887, bit 5)
+	const EVENT_PLACEHOLDER4                         ; A06, (D887, bit 6)
+	const EVENT_PLACEHOLDER5                         ; A07, (D887, bit 7)
 
 NUM_EVENT_FLAGS EQU const_value
